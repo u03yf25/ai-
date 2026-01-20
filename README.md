@@ -1,164 +1,218 @@
 # python-
-平时练习python区，可以进行井字棋
-[50105958.py](https://github.com/user-attachments/files/24738258/50105958.py)
-# Q1
-def stringToNum(string):
-   
-    number=string.split(',')
-    num=list(map(int,number))
-    return num
-if __name__ == "__main__":
-    print(stringToNum("5,6,7,8")) 
- # split(',') 的作用就是 “按逗号切分字符串”
-# if __name__ == "__main__" 就是给代码加个「使用场景过滤器」：
-# 自己单独用（直接运行）：执行测试 / 主逻辑；
-# 给别人当工具用（导入）：只给函数 / 功能，不执行多余代码
+import os
+import json
+import random
+import warnings
+from io import BytesIO
+from typing import List, Dict, Tuple
 
-# Q2
-def _w_h_input(text,num1,num2):
-    text_upper=text.upper()
-    num1_round=round(num1,1)
-    num2_round=round(num2,1)
-    resluttuple=(text_upper,num1_round,num2_round)
-    return resluttuple
-# Q3
-def n_w_h_output(name,weight,height):
-    print(f"{name}’s weight is {weight} and his/her height is {height}")
+import openai
+from PIL import Image, ImageDraw, ImageFont
+from stability_sdk import client
+import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
 
-# Q4
-def calcBMI(weight,height):
-    bmi_value = weight / height / height * 10000
-    bmi_rounded = round(bmi_value, 1)
-    return bmi_rounded
+class ComicPanel:
+    """漫画分镜类"""
+    def __init__(self, number: int, description: str, text: str):
+        self.number = number
+        self.description = description
+        self.text = text
+        self.image = None
 
-# Q5
-def  bmiCat(number):
-    if number<=18.5:
-        print('Lower than 18.5, Underweight')
-    elif 18.5<=number<=24.9:
-        print('Between 18.5 and 24.9, Healthy')
-    elif 25<=number<=29.9:
-        print('Between 25 and 29.9, Overweight')
-    elif 30<=number<=39.9:
-        print('Between 30 and 39.9, Obese')
-    else:
-        print('More than 40, Severely obese')
+class ComicGenerator:
+    """漫画生成器类"""
     
-# Q6
-def bmiReport(name,weight,height,bmi, weightcategory):
-    inner_dict = {
-        "weight": weight,
-        "height": height,
-        "BMI": bmi,
-        "weight category": weightcategory
-    }
-    outer_dict = {
-        name: inner_dict
-    }
-    return outer_dict
-
-#Q7
-def oddList(num1,num2):
-    odd_number=[]
-    start = min(num1, num2)
-    end = max(num1, num2)
-    for i in range(start,end+1):
-        if i%2!=0:
-            odd_number.append(i)
-    return odd_number
-# Q8
-def reverseString(s):
-# reverse() 是 列表的内置方法，仅能用于列表（list），不能直接用于字符串（str）；
-   return s[::-1]
-
-# Q9
-def startAndEnd(lst):
-    if lst[0]==lst[-1]:
-        return True
-    else:
-        return False
-    
-# Q10
-def createBoard():
-# 不建议写 [["_"]*3]*3！这种写法会让 3 个子列表指向同一内存地址，修改其中一个子列表时，其他子列表会同步变化（不符合 “独立子列表” 的要求）
-    row1 = ["_", "_", "_"]
-    row2 = ["_", "_", "_"]
-    row3 = ["_", "_", "_"]
-    board = [row1, row2, row3]
-    return board
-# Q11
-def  displayBoard(s):
-    for row in s:
-        print(row)
-test_board = [["_","_","_"], ["_","_","_"], ["_","_","_"]]
-displayBoard(test_board)
-# Q12
-def getMove():
-    user_input=input('输入一到九数字：').strip()
-    if not user_input.isdigit():
-        return False 
-    s=int(user_input)
-    if 1<=s<=9:
-        return s
-    else:
-        return False
-# 想让用户看到结果 → 用 print；
-# 想让程序后续使用结果 → 用 return；
-# 函数的核心价值是返回数据，print 只是辅助展示（比如你写一个计算函数，重点是 return 结果，而不是 print 结果）；
-# 一个函数可以有多个 print，但只要执行到一个 return，函数就会立刻结束。
-
-# Q13
-def intToBoard(d):
-    adjust=d-1
-    row=adjust//3
-    line=adjust%3
-    return (row,line)
-
-# Q14
-def insertToBoard(pos_tuple, board, is_x):
-    row = pos_tuple[0]
-    col = pos_tuple[1]
-    if board[row][col] in ["X", "O"]:
-        return(False,board)
-    if is_x:
-        board[row][col] = "X"
-    else:
-        board[row][col] = "O"
-        return (True, board)
-
-# Q15
-def checkDraw(board):
-    # 遍历棋盘的每一行
-    for row in board:
-        # 遍历当前行的每一个格子
-        for cell in row:
-            # 如果找到空白格子（"_"），直接返回False
-            if cell == "_":
-                return False
-    # 遍历完所有格子都没找到"_"，返回True（平局）
-    return True
-# Q16
-def checkWin(board):
-    # 1. 把所有可能赢的情况列出来（8种：3行+3列+2对角线）
-    # 每个小括号是一个格子的坐标（行，列），比如(0,0)就是左上角
-    win_ways = [
-        [(0,0), (0,1), (0,2)],  
-        [(1,0), (1,1), (1,2)],  
-        [(2,0), (2,1), (2,2)],  
-        [(0,0), (1,0), (2,0)],  
-        [(0,1), (1,1), (2,1)],  
-        [(0,2), (1,2), (2,2)], 
-        [(0,0), (1,1), (2,2)],  
-        [(0,2), (1,1), (2,0)] 
-     ]
-    for way in win_ways:
-        # way[0]是第一个格子的坐标，比如(0,0)，board[0][0]就是这个格子的值
-        grid1 = board[way[0][0]][way[0][1]]
-        grid2 = board[way[1][0]][way[1][1]]
-        grid3 = board[way[2][0]][way[2][1]]
+    def __init__(self, openai_api_key: str, stability_api_key: str):
+        # 初始化OpenAI客户端
+        self.openai_client = openai.OpenAI(api_key=openai_api_key)
         
-        if grid1 == grid2 == grid3 and grid1 != "_":
-            return True  ”
-    
-    
-        return False
+        # 初始化Stability AI客户端
+        self.stability_api = client.StabilityInference(
+            key=stability_api_key,
+            verbose=True,
+            engine="stable-diffusion-xl-1024-v1-0",
+        )
+        
+        # 随机种子，确保生成的图像风格一致
+        self.seed = random.randint(0, 1000000000)
+        
+        # 加载字体（可以替换为你喜欢的漫画字体）
+        try:
+            self.font = ImageFont.truetype("comic_font.ttf", 24)
+        except:
+            self.font = ImageFont.load_default()
+
+    def generate_panels(self, story: str, num_panels: int = 6) -> List[ComicPanel]:
+        """
+        将故事文本生成为漫画分镜
+        
+        Args:
+            story: 完整的故事文本
+            num_panels: 生成的分镜数量
+            
+        Returns:
+            漫画分镜列表
+        """
+        prompt = f"""
+        将以下故事改编为{num_panels}格漫画的分镜描述：
+        
+        故事：{story}
+        
+        请按照以下格式输出，不要包含其他内容：
+        [
+            {{
+                "number": 1,
+                "description": "第一格的详细画面描述，包含角色、场景、动作",
+                "text": "第一格的对话或旁白文字"
+            }},
+            ...
+        ]
+        """
+        
+        try:
+            response = self.openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "你是一位专业的漫画分镜师，擅长将故事转化为生动的漫画分镜。"},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1000
+            )
+            
+            panels_data = json.loads(response.choices[0].message.content)
+            return [ComicPanel(**panel) for panel in panels_data]
+            
+        except Exception as e:
+            print(f"生成漫画分镜时出错: {e}")
+            return []
+
+    def generate_panel_image(self, panel: ComicPanel, style: str = "漫画风格") -> Image.Image:
+        """
+        为单个分镜生成图像
+        
+        Args:
+            panel: 漫画分镜对象
+            style: 漫画风格描述
+            
+        Returns:
+            生成的图像对象
+        """
+        prompt = f"{panel.description}, {style}, 线条清晰, 色彩鲜艳, 漫画分镜"
+        
+        try:
+            answers = self.stability_api.generate(
+                prompt=prompt,
+                seed=self.seed,
+                steps=30,
+                cfg_scale=8.0,
+                width=1024,
+                height=1024,
+                sampler=generation.SAMPLER_K_DPMPP_2M
+            )
+            
+            for resp in answers:
+                for artifact in resp.artifacts:
+                    if artifact.finish_reason == generation.FILTER:
+                        warnings.warn(
+                            "您的请求触发了安全过滤，请修改提示词后重试。"
+                        )
+                        return None
+                        
+                    if artifact.type == generation.ARTIFACT_IMAGE:
+                        return Image.open(BytesIO(artifact.binary))
+                        
+        except Exception as e:
+            print(f"生成图像时出错: {e}")
+            return None
+            
+        return None
+
+    def add_text_to_panel(self, image: Image.Image, text: str) -> Image.Image:
+        """
+        为漫画分镜添加文字
+        
+        Args:
+            image: 漫画图像
+            text: 要添加的文字
+            
+        Returns:
+            添加文字后的图像
+        """
+        # 创建绘图对象
+        draw = ImageDraw.Draw(image)
+        
+        # 计算文字位置（底部居中）
+        text_width, text_height = draw.textsize(text, font=self.font)
+        x = (image.width - text_width) // 2
+        y = image.height - text_height - 20
+        
+        # 添加文字背景
+        bg_rectangle = [x-10, y-10, x+text_width+10, y+text_height+10]
+        draw.rectangle(bg_rectangle, fill="white")
+        
+        # 添加文字
+        draw.text((x, y), text, font=self.font, fill="black")
+        
+        return image
+
+    def create_comic_strip(self, panels: List[ComicPanel]) -> Image.Image:
+        """
+        将多个分镜合成为完整的漫画条
+        
+        Args:
+            panels: 漫画分镜列表
+            
+        Returns:
+            合成的漫画条图像
+        """
+        if not panels:
+            return None
+            
+        # 计算漫画条的尺寸
+        panel_width = panels[0].image.width if panels[0].image else 1024
+        panel_height = panels[0].image.height if panels[0].image else 1024
+        
+        # 创建漫画条画布（横向排列）
+        strip_width = panel_width * len(panels)
+        strip_height = panel_height
+        strip_image = Image.new('RGB', (strip_width, strip_height), color='white')
+        
+        # 将每个分镜粘贴到漫画条上
+        for i, panel in enumerate(panels):
+            if panel.image:
+                strip_image.paste(panel.image, (i * panel_width, 0))
+                
+        return strip_image
+
+    def generate_comic(self, story: str, style: str = "漫画风格", num_panels: int = 6) -> Tuple[List[ComicPanel], Image.Image]:
+        """
+        完整的漫画生成流程
+        
+        Args:
+            story: 故事文本
+            style: 漫画风格
+            num_panels: 分镜数量
+            
+        Returns:
+            分镜列表和合成的漫画条
+        """
+        print("正在生成漫画分镜...")
+        panels = self.generate_panels(story, num_panels)
+        
+        if not panels:
+            return [], None
+            
+        print(f"正在生成{len(panels)}格漫画图像...")
+        for i, panel in enumerate(panels):
+            print(f"正在生成第{i+1}格...")
+            image = self.generate_panel_image(panel, style)
+            
+            if image:
+                # 添加文字到图像
+                panel.image = self.add_text_to_panel(image, panel.text)
+        
+        print("正在合成漫画条...")
+        comic_strip = self.create_comic_strip(panels)
+        
+        return panels, comic_strip
